@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NextPick — Recommendations You Can Trust</title>
+  <link rel="stylesheet" href="mainpage.css">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500&family=Raleway:wght@300;500;700&display=swap" rel="stylesheet">
+  <!-- <link rel="stylesheet" href="cookies .html"> -->
+  <style>
+    /* ===== Reset ===== */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body { height: 100%; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #fff; }
+
+    body {
+      background: #030b1c; /* Dark night sky */
+      overflow-x: hidden;
+    }
+
+    /* ===== Navbar ===== */
+    .navbar {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      padding: 20px 80px;
+      display: flex; justify-content: space-between; align-items: center;
+      background: transparent;
+      z-index: 1000;
+    }
+    .brand-name { color: #fff; font-weight: 700; font-size: 1.5rem; }
+    .navbar-center { list-style: none; display: flex; gap: 30px; }
+    .navbar-center li a {
+      text-decoration: none; color: #fff; font-weight: 600; font-size: 1rem;
+      position: relative; padding-bottom: 5px; transition: color .3s ease;
+    }
+    .navbar-center li a::after {
+      content: ""; position: absolute; left: 0; bottom: 0; height: 3px; width: 0%;
+      background-color: rgb(60,147,241); transition: width .3s ease;
+    }
+    .navbar-center li a:hover::after { width: 100%; }
+
+    .navbar-right a.btn-contact {
+      background: #fff; color: #000; text-decoration: none; font-weight: 600;
+      padding: 10px 20px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,.1);
+      transition: transform .2s ease;
+    }
+    .navbar-right a.btn-contact:hover { transform: scale(1.05); }
+
+    /* Hamburger */
+    .hamburger { display: none; flex-direction: column; cursor: pointer; gap: 5px; padding: 10px; }
+    .hamburger span { height: 3px; width: 25px; background: #fff; border-radius: 2px; transition: all .3s ease; }
+
+    /* ===== Hero / Text overlay ===== */
+    canvas#starCanvas { position: absolute; inset: 0; z-index: -1; }
+    .text-overlay { position: absolute; top: 58%; left: 50%; transform: translate(-50%, -50%);
+      text-align: center; z-index: 1; padding: 0 1rem; }
+    .text-overlay h1 { font-size: 4rem; margin: 0; line-height: 1.2; }
+    .highlight { color: #A3D5FF; }
+    .subheading { font-family: 'Raleway', sans-serif; font-size: 1.2rem; margin-top: 1rem; color: #d0d6f9; font-weight: 500; line-height: 1.8; }
+    .subheading .highlight-word { color: #94bbd3; font-weight: 600; }
+
+    .typewriter { font-size: 3rem; white-space: nowrap; overflow: hidden; border-right: 3px solid #A3D5FF; width: 0; color: #fff; position: absolute; top: 42%; left: 50%; transform: translate(-50%, -50%);
+      animation: typing 2s steps(26, end) forwards, blink .7s step-end 3 forwards, remove-cursor 0s 2.1s forwards; text-align: center; letter-spacing: 1px; }
+    @keyframes typing { from { width: 0; } to { width: 22ch; } }
+    @keyframes blink { 0%, 100% { border-color: #A3D5FF; } 50% { border-color: transparent; } }
+    @keyframes remove-cursor { to { border-right: none; } }
+
+    /* Decorative curves */
+    .curve-line { position: absolute; top: 200px; height: 400px; width: 100px; z-index: 1; pointer-events: none; }
+    .curve-left { left: 0; }
+    .curve-right { right: 50px; width: 80px; height: 550px; top: 25%; transform: scaleX(-1) rotate(40deg); transform-origin: center right; }
+    .curve-line svg { width: 100%; height: 100%; }
+    .curve-line path { stroke: #8ecfff; stroke-width: 2.5; fill: none; }
+
+    /* Scroll hint */
+    .line-animation { margin-top: 350px; display: flex; flex-direction: column; align-items: center; width: 100%; }
+    .line { width: 2px; height: 100px; background-color: #000; position: relative; overflow: hidden; }
+    .line::after { content: ""; position: absolute; left: 0; width: 100%; height: 25px; background: #fff; box-shadow: 0 0 15px 3px rgba(255,255,255,.9), 0 0 30px 5px rgba(255,255,255,.6); animation: scan 2s linear infinite; border-radius: 1px; }
+    .scroll-text { margin-top: 20px; font-size: 14px; color: #fff; animation: fadeInOut 2s ease-in-out infinite; text-align: center; }
+    @keyframes scan { 0% { top: 0; opacity: 0; } 5% { opacity: 1; } 95% { opacity: 1; } 100% { top: 100%; opacity: 0; transform: translateY(-100%); } }
+
+    /* Sections */
+    section { padding: 60px 20px; color: #fff; background: #111; }
+    .container { max-width: 1200px; margin: auto; text-align: center; }
+    .title { font-size: 2.4rem; font-weight: 700; margin-bottom: 10px; }
+    .subtitle { font-size: 1rem; color: #bbb; margin-bottom: 20px; }
+
+    /* Video */
+    .video-section { padding: 4rem 1rem; display: flex; justify-content: center; align-items: center; perspective: 1500px; background: transparent; }
+    .video-card { background: #fff; color: #222; border-radius: 20px; overflow: hidden; transform-style: preserve-3d; transform: rotateX(5deg) rotateY(-5deg) translateZ(30px); transition: transform .4s ease, box-shadow .4s ease;
+      box-shadow: 0 15px 35px rgba(0,0,0,.15), 0 10px 15px rgba(0,0,0,.1), inset 0 1px 1px rgba(255,255,255,.9); max-width: 800px; width: 100%; position: relative; z-index: 10; }
+    .video-card:hover { transform: rotateX(0) rotateY(0) translateZ(40px); box-shadow: 0 25px 50px rgba(0,0,0,.2), 0 15px 25px rgba(0,0,0,.15), inset 0 1px 1px rgba(255,255,255,.95); }
+    .video-card video { width: 100%; height: auto; display: block; border-bottom: 1px solid #eee; }
+    .video-description { padding: 1.5rem; text-align: center; transform: translateZ(20px); }
+
+    /* CTA button */
+    .button-container { display: flex; justify-content: center; align-items: center; margin: 20px 0 150px; }
+    .prj { background: #0c354a; padding: 15px 30px; font-weight: 800; color: #fff; border: 1px solid #000; border-radius: 10px; cursor: pointer; }
+
+    /* Scroller */
+    .slider-container { width: 80%; margin: 0 auto; }
+    .text-slider { overflow: hidden; white-space: nowrap; padding: 60px 0; transform: perspective(1000px); }
+    .text-track { display: inline-block; animation: scrollText 20s linear infinite; }
+    .text-track span { display: inline-block; margin: 0 50px; font-size: 1.6rem; font-weight: 700; color: #aab5c0; opacity: .8; transition: transform .3s ease, color .3s ease; text-shadow: 1px 1px 2px #000; }
+    .text-track span:hover { color: #fff; transform: scale(1.08) translateZ(10px); opacity: 1; }
+    @keyframes scrollText { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+    /* About */
+    .about-section { display: flex; justify-content: center; padding: 80px 20px; background: transparent; }
+    .about-content p { font-size: 2rem; font-weight: 600; line-height: 1.5; max-width: 900px; text-align: left; color: #e0e0e0; text-shadow: 1px 1px 2px rgba(0,0,0,.5); }
+    .about-content span { background: linear-gradient(to right, #9ec9e6, #79c2d0); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+    /* Prefs */
+    #prefs .prefs { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .panel { background: #1a1a1a; border-radius: 12px; padding: 20px; text-align: left; box-shadow: 0 1px 4px rgba(0,0,0,.4); }
+    .panel h4 { font-size: 1.1rem; font-weight: 600; margin-bottom: 14px; }
+    .panel .muted { font-size: .85rem; color: #777; margin-top: 12px; }
+    .tags { display: flex; flex-wrap: wrap; gap: 10px; }
+    .tag { background: #222; border: 1px solid #333; padding: 6px 14px; border-radius: 20px; font-size: .9rem; color: #bbb; cursor: pointer; transition: all .3s ease; user-select: none; }
+    .tag:hover { background: #333; border-color: #444; color: #fff; }
+    .tag.active { background: #fff; color: #000; border-color: #fff; }
+    .btn { padding: 10px 18px; border: none; border-radius: 20px; font-weight: 700; cursor: pointer; transition: all .3s; }
+    .btn-primary { background: #fff; color: #000; }
+    .btn-primary:hover { background: #ddd; }
+    .btn-ghost { background: transparent; border: 1px solid #555; color: #bbb; }
+    .btn-ghost:hover { border-color: #fff; color: #fff; }
+
+    /* Catalog / Cards */
+    .products { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 20px; }
+    .product-card { background: #1a1a1a; border-radius: 12px; overflow: hidden; text-align: left; transition: transform .3s ease, box-shadow .3s ease; box-shadow: 0 2px 8px rgba(0,0,0,.4); }
+    .product-card:hover { transform: translateY(-6px); box-shadow: 0 4px 16px rgba(0,0,0,.6); }
+    .product-card img { width: 100%; height: 180px; object-fit: cover; display: block; }
+    .product-info { padding: 15px; }
+    .product-info h3 { font-size: 1.1rem; margin: 0 0 6px; }
+    .product-info p { font-size: .9rem; color: #ccc; margin-bottom: 12px; }
+    .like-btn { display: inline-flex; align-items: center; gap: 6px; font-size: .9rem; color: #ff4d6d; cursor: pointer; transition: color .3s; background: transparent; border: none; font-weight: 700; }
+    .like-btn:hover { color: #ff1a4d; }
+
+    /* Footer */
+    .footer { background: #040917; color: #fff; padding: 40px 6vw; }
+    .footer-container { display: flex; justify-content: space-between; flex-wrap: wrap; border-bottom: 1px solid #222; padding-bottom: 20px; margin-bottom: 20px; }
+    .footer-section { flex: 1; min-width: 200px; margin: 15px; }
+    .footer-section h2, .footer-section h3 { margin-bottom: 10px; font-size: 18px; font-weight: 700; }
+    .footer-section p { margin: 5px 0; font-size: 14px; color: #ccc; }
+    .social-icons a { margin-right: 15px; font-size: 18px; color: #ccc; transition: color .3s; }
+    .social-icons a:hover { color: #fff; }
+    .footer-bottom { display: flex; justify-content: space-between; flex-wrap: wrap; font-size: 13px; color: #888; }
+    .footer-bottom .links a { margin-right: 20px; color: #888; text-decoration: none; transition: color .3s; }
+    .footer-bottom .links a:hover { color: #fff; }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 1200px) { .navbar { padding: 1rem 4%; } }
+    @media (max-width: 992px) {
+      .text-overlay h1 { font-size: 3.2rem; }
+      .curve-line { opacity: .7; }
+    }
+    @media (max-width: 768px) {
+      .navbar { padding: 1rem 3%; flex-wrap: wrap; }
+      .navbar-center li { margin: 0 .8rem; }
+      .text-overlay { padding: 0 1.5rem; }
+      .text-overlay h1 { font-size: 2.6rem; }
+
+      .hamburger { display: flex; }
+      .navbar-center, .navbar-right { display: none; flex-direction: column; width: 100%; background: #ffffff; position: absolute; top: 60px; left: 0; padding: 10px 0; text-align: center; }
+      .navbar-center.active, .navbar-right.active { display: flex; }
+    }
+    @media (max-width: 576px) {
+      .curve-line { display: none; }
+      .line-animation { margin-top: 60vh; }
+      .navbar-center li a { color: #000; }
+    }
+    @media (max-width: 400px) {
+      html { font-size: 15px; }
+      .brand-name { font-size: 1.1rem; }
+      .navbar-center li a { font-size: .9rem; }
+    }
+    /* Popup overlay */
+.popup-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.7);
+  display: none; /* Hidden by default */
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+/* Show class */
+.popup-overlay.show {
+  display: flex;
+}
+
+/* Popup box */
+.popup-box {
+  background: #fff;
+  color: #222;
+  padding: 25px;
+  max-width: 420px;
+  width: 90%;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+  animation: fadeIn 0.3s ease;
+}
+
+.popup-box h2 {
+  margin-bottom: 12px;
+  font-size: 22px;
+  color: #0c354a;
+}
+
+.popup-box p {
+  font-size: 15px;
+  margin-bottom: 20px;
+  color: #444;
+  line-height: 1.5;
+}
+
+.popup-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+/* === CART ICON === */
+.cart-container {
+  position: relative;
+  display: inline-block;
+  margin-left: 15px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.cart-container:hover {
+  transform: scale(1.1);
+}
+
+.cart-icon {
+  font-size: 1.6rem;
+}
+
+.cart-count {
+  position: absolute;
+  top: -8px;
+  right: -10px;
+  background: #ff3b30;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: bold;
+  border-radius: 50%;
+  padding: 2px 6px;
+  min-width: 18px;
+  text-align: center;
+}
+
+.accept-btn, .settings-btn {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.3s ease;
+}
+
+.accept-btn {
+  background: #0c354a;
+  color: #fff;
+}
+
+.accept-btn:hover {
+  background: #115a7a;
+}
+
+.settings-btn {
+  background: #eee;
+  color: #333;
+}
+
+.settings-btn:hover {
+  background: #ddd;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+
+    html { scroll-behavior: smooth; }
+  </style>
+</head>
+
+<body>
+<!-- Cookie / Welcome Popup -->
+<div id="cookieModal" class="popup-overlay">
+  <div class="popup-box">
+    <h2>We Value Your Privacy</h2>
+    <p>NextPick uses cookies to personalize recommendations and improve your experience.</p>
+    <div class="popup-buttons">
+      <button class="accept-btn" onclick="acceptCookies()">Accept All</button>
+      <button class="settings-btn" onclick="goToSettings()"><a href="cookies.html" style="text-decoration: none;">Manage Settings</a></button>
+    </div>
+  </div>
+</div>
+
+  <div class="background">
+    <canvas id="starCanvas"></canvas>
+
+    <!-- Left Curve -->
+    <div class="curve-line curve-left">
+      <svg viewBox="0 0 100 800" preserveAspectRatio="none">
+        <path d="M 0 0 Q 80 400 0 800" />
+      </svg>
+    </div>
+    <!-- Right Curve -->
+    <div class="curve-line curve-right">
+      <svg viewBox="0 0 100 800" preserveAspectRatio="none">
+        <path d="M 0 0 Q 80 400 0 800" />
+      </svg>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+      <div class="navbar-left">
+        <span class="brand-name">NextPick</span>
+      </div>
+      <div class="hamburger" id="hamburger">
+        <span></span><span></span><span></span>
+      </div>
+      <ul class="navbar-center" id="nav-links">
+        <li><a href="#">Home</a></li>
+        <li><a href="#catalog">Products</a></li>
+        <li><a href="#recs-section">Recommendations</a></li>
+        <li><a href="#prefs">Preferences</a></li>
+      </ul>
+      <div class="navbar-right">
+        <a href="createacc.html" class="btn-contact">Create an account</a>
+        <a href="signin.html" class="btn-contact">Sign in</a>
+        <div class="cart-container" onclick="goToCart()">
+      <span class="cart-icon">🛒</span>
+      <span class="cart-count" id="cart-count">0</span>
+    </div>
+      </div>
+    </nav>
+
+    <!-- Hero -->
+    <div class="text-overlay">
+      <h1 class="typewriter">Quality Recommendations<br /><span class="highlight">You Can Trust</span></h1>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <p class="subheading"><i>Personalized product <span class="highlight-word">picks</span>, to boost <span class="highlight-word">engagement and sales</span>.</i></p>
+    </div>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <div class="line-animation" aria-hidden="true">
+      <div class="line"></div>
+      <p class="scroll-text">Scroll to explore</p>
+    </div>
+  </div>
+
+  <!-- Video -->
+  <section class="video-section" aria-label="Demo video">
+    <div class="video-card">
+      <video poster="pic.webp">
+        <!-- Replace with an actual mp4 when ready -->
+        <!-- <source src="demo.mp4" type="video/mp4" /> -->
+      </video>
+      <div class="video-description">
+        <h2>Learnify — Educational Platform</h2>
+      </div>
+    </div>
+  </section>
+
+  <div class="button-container">
+    <button class="prj" type="button">Show more work</button>
+  </div>
+
+  <!-- Scrolling keywords -->
+  <div class="slider-container" aria-hidden="true">
+    <div class="text-slider">
+      <div class="text-track">
+        <span>Personalization</span><span>Prediction</span><span>Relevance</span><span>Engagement</span><span>Similarity</span>
+        <span>Discovery</span><span>Insights</span><span>Recommendation</span><span>Automation</span><span>Optimization</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- About -->
+  <section class="about-section">
+    <div class="about-content">
+      <p>A lightweight web app that demonstrates three classic recommendation strategies: preference-based (content), history-based (content), and user–user collaborative filtering. No backend required — everything runs locally in your browser.</p>
+    </div>
+  </section>
+
+  <!-- Preferences -->
+  <section id="prefs" class="reveal">
+    <div class="container">
+      <h2 class="title">Set Your Preferences</h2>
+      <p class="subtitle">Tap tags to toggle. Your choices are saved in your browser.</p>
+
+      <div class="prefs">
+        <div class="panel">
+          <h4>Categories</h4>
+          <div id="catTags" class="tags">
+            <div class="tag active">Audio</div>
+            <div class="tag active">Wearables</div>
+            <div class="tag active">Cameras</div>
+            <div class="tag">Computers</div>
+            <div class="tag">Home</div>
+            <div class="tag">Skincare</div>
+            <div class="tag">Health</div>
+          </div>
+          <p class="muted">Tip: pick 2–5 categories for best results.</p>
+        </div>
+        <div class="panel">
+          <h4>Popular Tags</h4>
+          <div id="tagTags" class="tags">
+            <div class="tag">wireless</div><div class="tag">bluetooth</div><div class="tag">noise-cancelling</div><div class="tag">over-ear</div>
+            <div class="tag">fitness</div><div class="tag">notifications</div><div class="tag">gps</div><div class="tag">waterproof</div>
+            <div class="tag">dslr</div><div class="tag">4k</div><div class="tag">mirrorless</div><div class="tag">pro</div>
+            <div class="tag">gaming</div><div class="tag">laptop</div><div class="tag">rgb</div><div class="tag">performance</div>
+            <div class="tag">smart-home</div><div class="tag">voice</div><div class="tag">assistant</div><div class="tag">music</div>
+            <div class="tag">action</div><div class="tag">wide-angle</div><div class="tag">compact</div>
+            <div class="tag">charging-case</div><div class="tag">sleep</div><div class="tag">steps</div><div class="tag">heart-rate</div>
+            <div class="tag">tv</div><div class="tag">hdr</div><div class="tag">smart-tv</div><div class="tag">lightweight</div>
+            <div class="tag">portable</div><div class="tag">battery</div><div class="tag">work</div><div class="tag">lens</div>
+            <div class="tag">bokeh</div><div class="tag">prime</div><div class="tag">portrait</div>
+            <div class="tag">automation</div><div class="tag">wifi</div><div class="tag">keyboard</div><div class="tag">mechanical</div>
+            <div class="tag">accessory</div><div class="tag">comfort</div><div class="tag">noise-reduction</div>
+            <div class="tag">clothing</div><div class="tag">shoes</div><div class="tag">watches</div>
+            <div class="tag">Skincare</div><div class="tag">Health</div><div class="tag">nutrition</div><div class="tag">protein</div>
+          </div>
+          <div style="margin-top:14px; display:flex; gap:10px;">
+            <button id="savePrefs" class="btn btn-primary" type="button">Save Preferences</button>
+            <button id="clearPrefs" class="btn btn-ghost" type="button">Clear</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Catalog (STATIC HTML, but with data-id attributes that match JS CATALOG) -->
+  <section id="catalog" class="reveal">
+    <div class="container">
+      <h2 class="title">Product Catalog</h2>
+      <p class="subtitle">Browse and click ❤ to like. Viewing & liking improves your recommendations.</p>
+
+      <div id="productGrid" class="products" style="margin-top:22px;">
+        <div class="product-card" data-id="p1">
+          <img src="noisecancelling.jpg" alt="Noise-Cancelling Headphones with comfortable over-ear cups">
+          <div class="product-info"><h3>Noise-Cancelling Headphones</h3><p>$129</p><button class="like-btn" type="button">❤ Like</button></div>
+        </div>
+        <div class="product-card" data-id="p2">
+          <a href="smart.html" style="text-decoration: none; color:#fff;"><img src="watch.png" alt="Smartwatch Pro with GPS and health tracking">
+          <div class="product-info"><h3>Smartwatch Pro</h3><p>$179</p><button class="like-btn" type="button">❤ Like</button></a></div>
+        </div>
+        <div class="product-card" data-id="p3">
+          <img src="camera.jpg" alt="Mirrorless Camera X with 4k video">
+          <div class="product-info"><h3>Mirrorless Camera X</h3><p>$799</p><button class="like-btn" type="button">❤ Like</button></div>
+        </div>
+        <div class="product-card" data-id="p4">
+          <img src="lap.jpg" alt="Gaming Laptop 15">
+          <div class="product-info"><h3>Gaming Laptop 15</h3><p>$1099</p><button class="like-btn" type="button">❤ Like</button></div>
+        </div>
+        <div class="product-card" data-id="p5">
+          <img src="speaker.jpg" alt="Smart Speaker Mini with voice assistant">
+          <div class="product-info"><h3>Smart Speaker Mini</h3><p>$99</p><button class="like-btn" type="button">❤ Like</button></div>
+        </div>
+        <div class="product-card" data-id="p6">
+          <img src="action.jpg" alt="Action Cam 4K waterproof camera">
+          <div class="product-info"><h3>Action Cam 4K</h3><p>$249</p><button class="like-btn" type="button">❤ Like</button></div>
+        </div>
+        <div class="product-card" data-id="p7">
+          <img src="airpods.webp" alt="Wireless Earbuds S with charging case">
+          <div class="product-info"><h3>Wireless Earbuds S</h3><p>$79</p><button class="like-btn" type="button">❤ Like</button></div>
+        </div>
+        <div class="product-card" data-id="p8">
+          <img src="band.webp" alt="Fitness Tracker Band for steps and sleep">
+          <div class="product-info"><h3>Fitness Tracker Band</h3><p>$59</p><button class="like-btn" type="button">❤ Like</button></div>
+        </div>
+        <div class="product-card" data-id="p9">
+          <img src="cloth.webp" alt="Louis Vuitton Shirt">
+          <div class="product-info"><h3>Louis Vuitton Shirt</h3><p>$199</p><button class="like-btn" type="button">❤ Like</button></div>
+        </div>
+        <div class="product-card" data-id="p10">
+          <a href="shoes.html" style="text-decoration: none; color: #fff;"><img src="airforce.webp" alt="Nike Air Force Sneakers">
+          <div class="product-info"><h3>Nike Air Force</h3><p>$399</p></a><button class="like-btn" type="button">❤ Like</button></div>
+        </div>
+        <div class="product-card" data-id="p11">
+          <img src="watchh.jpg" alt="Bugatti Chiron Engine Watch">
+          <div class="product-info"><h3>Bugatti Chiron Engine Watch</h3><p>$150000</p><button class="like-btn" type="button">❤ Like</button></div>
+        </div>
+        <div class="product-card" data-id="p12">
+          <img src="mamaearth.jpg" alt="Mamaearth Skincare Cream">
+          <div class="product-info"><h3>Mamaearth Skincare Cream</h3><p>$19</p><button class="like-btn" type="button">❤ Like</button></div>
+        </div>
+        <div class="product-card" data-id="p13">
+          <!-- NOTE: filename is lowercase to match JS (fix for case-sensitive servers) -->
+          <img src="protein.jpg" alt="Whey Protein Powder">
+          <div class="product-info"><h3>Whey Protein Powder</h3><p>$119</p><button class="like-btn" type="button">❤ Like</button></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-section"><h2 class="logo">NextPick</h2></div>
+      <div class="footer-section"><h3>Headquarters</h3><p>Chitkara University</p><p>Rajpura, Punjab</p></div>
+      <div class="footer-section"><h3>Contact</h3><p>(+1) 4578925769</p><p><a href="#" style="color:#fff; text-decoration:none;">NextPick@gmail.com</a></p></div>
+      <div class="footer-section"><h3>Follow us</h3>
+        <div class="social-icons">
+          <a href="https://www.facebook.com/"><img src="facebook-logo-facebook-icon-transparent-free-png.webp" style="height: 28px; width: 28px;" alt="Facebook"></a>
+          <a href="https://www.instagram.com/"><img src="png-clipart-instagram-logo-icon-others-text-photography-removebg-preview.png" style="height: 26px; width: 26px;" alt="Instagram"></a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="links"><a href="privacy.html" style="text-decoration: none;">Privacy Policy</a><a href="terms.html" style="text-decoration: none;">Terms of Service</a><a href="cookies.html" style="text">Cookie Settings</a></div>
+      <p>©2025 NextPick. All Rights Reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+
+
+
+
+// Show popup automatically on page load
+    window.onload = function() {
+      document.getElementById("cookieModal").classList.add("show");
+    };
+
+    function acceptCookies() {
+      alert("All cookies accepted ✅");
+      document.getElementById("cookieModal").classList.remove("show");
+    }
+
+    function goToSettings() {
+      window.location.href = "main2.html"; // Redirect to Cookies Settings Page
+    }
+
+
+
+
+
+  // ===== Navbar hamburger toggle =====
+  const hamburger = document.getElementById('hamburger');
+  const navLinks = document.getElementById('nav-links');
+  const navRight = document.querySelector('.navbar-right');
+  hamburger.addEventListener('click', () => { navLinks.classList.toggle('active'); navRight.classList.toggle('active'); });
+
+  // ===== Data Model =====
+  const CATALOG = [
+    { id: 'p1',  title: 'Noise-Cancelling Headphones', price: 129,   img: 'noisecancelling.jpg', category: 'Audio',    tags: ['wireless','bluetooth','noise-cancelling','over-ear','comfort','battery','music','portable'] },
+    { id: 'p2',  title: 'Smartwatch Pro',               price: 179,   img: 'watch.png',           category: 'Wearables', tags: ['fitness','gps','notifications','waterproof','heart-rate','sleep','steps','lightweight'] },
+    { id: 'p3',  title: 'Mirrorless Camera X',          price: 799,   img: 'camera.jpg',          category: 'Cameras',  tags: ['mirrorless','4k','lens','bokeh','wide-angle','portrait','compact','battery'] },
+    { id: 'p4',  title: 'Gaming Laptop 15',             price: 1099,  img: 'lap.jpg',             category: 'Computers',tags: ['gaming','performance','rgb','work','portable'] },
+    { id: 'p5',  title: 'Smart Speaker Mini',           price: 99,    img: 'speaker.jpg',         category: 'Home',     tags: ['smart-home','voice','assistant','wifi','music','compact'] },
+    { id: 'p6',  title: 'Action Cam 4K',                price: 249,   img: 'action.jpg',          category: 'Cameras',  tags: ['action','4k','wide-angle','waterproof','portable','battery'] },
+    { id: 'p7',  title: 'Wireless Earbuds S',           price: 79,    img: 'airpods.webp',        category: 'Audio',    tags: ['wireless','bluetooth','charging-case','music','lightweight','portable','comfort'] },
+    { id: 'p8',  title: 'Fitness Tracker Band',         price: 59,    img: 'band.webp',           category: 'Wearables',tags: ['fitness','steps','sleep','heart-rate','notifications','lightweight','battery'] },
+    { id: 'p9',  title: 'Louis Vuitton Shirt',          price: 199,   img: 'cloth.webp',          category: 'Wearables',tags: ['clothing','fashion','luxury','casual','comfort'] },
+    { id: 'p10', title: 'Nike Air Force',               price: 399,   img: 'airforce.webp',       category: 'Wearables',tags: ['shoes','sneakers','fashion','comfort','casual'] },
+    { id: 'p11', title: 'Bugatti Chiron Engine Watch',  price: 150000,img: 'watchh.jpg',          category: 'Wearables',tags: ['luxury','watch','style','fashion','exclusive'] },
+    { id: 'p12', title: 'Mamaearth Skincare Cream',     price: 19,    img: 'mamaearth.jpg',       category: 'Skincare', tags: ['skincare','natural','hydration','organic'] },
+    { id: 'p13', title: 'Whey Protein Powder',          price: 119,   img: 'protein.jpg',         category: 'Health',   tags: ['health','nutrition','supplement','fitness','protein','workout'] }
+  ];
+
+  // ===== DOM Helpers =====
+  const $ = (sel, root=document) => root.querySelector(sel);
+  const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+  const byId = id => document.getElementById(id);
+
+
+
+  // ===== Storage =====
+  const LS = {
+    get(key, fallback) { try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; } },
+    set(key, val) { localStorage.setItem(key, JSON.stringify(val)); },
+    remove(key) { localStorage.removeItem(key); }
+  };
+  const KEYS = { catPrefs:'np_prefs_categories', tagPrefs:'np_prefs_tags', views:'np_history_views', likes:'np_history_likes', userId:'np_user_id' };
+  if (!LS.get(KEYS.userId)) LS.set(KEYS.userId, 'u_' + Math.random().toString(36).slice(2,8));
+
+  // ===== UI: Tag toggles + Save/Clear =====
+  function hydrateTagToggles() {
+    $$('#catTags .tag, #tagTags .tag').forEach(tag => tag.addEventListener('click', () => tag.classList.toggle('active')));
+    const savedCats = new Set(LS.get(KEYS.catPrefs, []));
+    const savedTags = new Set(LS.get(KEYS.tagPrefs, []));
+    $$('#catTags .tag').forEach(t => { if (savedCats.has(t.textContent.trim())) t.classList.add('active'); });
+    $$('#tagTags .tag').forEach(t => { if (savedTags.has(t.textContent.trim())) t.classList.add('active'); });
+    $('#savePrefs')?.addEventListener('click', () => {
+      const cats = $$('#catTags .tag.active').map(t => t.textContent.trim());
+      const tags = $$('#tagTags .tag.active').map(t => t.textContent.trim());
+      LS.set(KEYS.catPrefs, cats); LS.set(KEYS.tagPrefs, tags);
+      toast('Preferences saved. Re-ranking…');
+      rerankAndRender();
+    });
+    $('#clearPrefs')?.addEventListener('click', () => {
+      LS.remove(KEYS.catPrefs); LS.remove(KEYS.tagPrefs);
+      $$('#catTags .tag, #tagTags .tag').forEach(t => t.classList.remove('active'));
+      toast('Preferences cleared. Re-ranking…');
+      rerankAndRender();
+    });
+  }
+
+  // ===== Product Grid Wiring (BUGFIX: use data-id, not title/index) =====
+  function wireProductGrid() {
+    $$('#productGrid .product-card').forEach(card => {
+      const pid = card.getAttribute('data-id');
+      const product = CATALOG.find(p => p.id === pid);
+      if (!product) return;
+
+      // view tracking
+      card.addEventListener('mouseenter', () => addView(product.id));
+      card.addEventListener('click', e => { if (!e.target.closest('.like-btn')) addView(product.id); });
+
+      // like toggle
+      const likeEl = $('.like-btn', card);
+      if (likeEl) {
+        likeEl.addEventListener('click', e => {
+          e.stopPropagation();
+          toggleLike(product.id);
+          refreshLikeVisual(likeEl, product.id);
+          rerankAndRender();
+        });
+        refreshLikeVisual(likeEl, product.id);
+      }
+    });
+  }
+  function refreshLikeVisual(el, productId) {
+    const likes = new Set(LS.get(KEYS.likes, []));
+    const liked = likes.has(productId);
+    el.textContent = liked ? '❤ Liked' : '❤ Like';
+    el.style.opacity = liked ? '1' : '0.9';
+  }
+  function addView(productId) {
+    const views = LS.get(KEYS.views, {}); views[productId] = (views[productId] || 0) + 1; LS.set(KEYS.views, views);
+  }
+  function toggleLike(productId) {
+    const likes = new Set(LS.get(KEYS.likes, []));
+    likes.has(productId) ? likes.delete(productId) : likes.add(productId);
+    LS.set(KEYS.likes, Array.from(likes));
+  }
+
+  // ===== Recommendation Algorithms =====
+  function scoreByPreferences(product, catPrefs, tagPrefs) {
+    const catScore = catPrefs.size ? (catPrefs.has(product.category) ? 1 : 0) : 0.5;
+    const tagMatches = product.tags.filter(t => tagPrefs.has(t)).length;
+    const tagScore = tagPrefs.size ? tagMatches / Math.max(1, tagPrefs.size) : 0.5;
+    return 0.6 * catScore + 0.4 * tagScore;
+  }
+  function scoreByHistory(product, likesSet, views) {
+    const likedProducts = CATALOG.filter(p => likesSet.has(p.id));
+    const viewedIds = Object.keys(views || {});
+    const viewedProducts = CATALOG.filter(p => viewedIds.includes(p.id));
+    const likeOverlap = likedProducts.length ? avgJaccard(product.tags, likedProducts.map(p => p.tags)) : 0.5;
+    const viewOverlap = viewedProducts.length ? avgJaccard(product.tags, viewedProducts.map(p => p.tags)) : 0.5;
+    const selfBoost = (likesSet.has(product.id) ? 0.2 : 0) + ((views && views[product.id]) ? Math.min(views[product.id] * 0.02, 0.2) : 0);
+    return Math.min(1, 0.65 * likeOverlap + 0.25 * viewOverlap + selfBoost);
+  }
+  function syntheticUsers() {
+    const archetypes = [
+      { id:'uA', likesByCat:['Audio'],     tags:['wireless','bluetooth','music','comfort'] },
+      { id:'uB', likesByCat:['Wearables'], tags:['fitness','heart-rate','sleep','gps'] },
+      { id:'uC', likesByCat:['Cameras'],   tags:['4k','action','mirrorless','pro','wide-angle'] },
+      { id:'uD', likesByCat:['Computers'], tags:['gaming','performance','laptop','rgb'] },
+      { id:'uE', likesByCat:['Home','Audio'], tags:['smart-home','voice','assistant','wifi','music'] },
+    ];
+    return archetypes.map(a => {
+      const liked = CATALOG.filter(p => a.likesByCat.includes(p.category) || p.tags.some(t => a.tags.includes(t))).map(p => p.id);
+      return { id:a.id, likes: new Set(liked) };
+    });
+  }
+  function scoreByCollaborative(product, userLikesSet) {
+    const pool = syntheticUsers().concat([{ id: LS.get(KEYS.userId), likes: userLikesSet }]);
+    const sims = pool.filter(u => u.id !== LS.get(KEYS.userId)).map(u => jaccard(userLikesSet, u.likes));
+    const neighborStrength = sims.length ? (sims.sort((a,b)=>b-a).slice(0,2).reduce((s,x)=>s+x,0)/2) : 0;
+    const neighborsWhoLike = syntheticUsers().filter(u => u.likes.has(product.id)).length;
+    const likeBoost = neighborsWhoLike ? Math.min(1, neighborsWhoLike / 3) : 0;
+    return Math.min(1, 0.7 * neighborStrength + 0.3 * likeBoost);
+  }
+
+  // ===== Utils =====
+  function jaccard(A, B) { const inter = new Set([...A].filter(x => B.has(x))).size; const uni = new Set([...A, ...B]).size || 1; return inter / uni; }
+  function avgJaccard(targetTags, listOfTagArrays) {
+    const A = new Set(targetTags); if (!listOfTagArrays.length) return 0;
+    const scores = listOfTagArrays.map(tags => { const B = new Set(tags); const inter = new Set([...A].filter(x => B.has(x))).size; const uni = new Set([...A, ...B]).size || 1; return inter / uni; });
+    return scores.reduce((s,x)=>s+x,0)/scores.length;
+  }
+
+  // ===== Ranking & Rendering =====
+  function rankProducts() {
+    const cats = new Set(LS.get(KEYS.catPrefs, []));
+    const tags = new Set(LS.get(KEYS.tagPrefs, []));
+    const likes = new Set(LS.get(KEYS.likes, []));
+    const views = LS.get(KEYS.views, {});
+
+    const SCORES = CATALOG.map(p => {
+      const pref = scoreByPreferences(p, cats, tags);
+      const hist = scoreByHistory(p, likes, views);
+      const collab = scoreByCollaborative(p, likes);
+      const final = 0.5 * pref + 0.3 * hist + 0.2 * collab;
+      return { id: p.id, score: final, breakdown: { pref, hist, collab } };
+    }).sort((a,b) => b.score - a.score);
+
+    return SCORES;
+  }
+
+  function ensureRecommendationsSection() {
+    if (byId('recs-section')) return;
+    const section = document.createElement('section');
+    section.id = 'recs-section'; section.className = 'reveal';
+    section.innerHTML = `
+      <div class="container">
+        <h2 class="title">Recommended for you</h2>
+        <p class="subtitle">Powered by your preferences, activity, and similar users.</p>
+        <div id="recsGrid" class="products" style="margin-top:22px;"></div>
+      </div>`;
+    const footer = document.querySelector('footer.footer');
+    (footer?.parentNode || document.body).insertBefore(section, footer || null);
+  }
+
+  function renderCardsInto(gridEl, items) {
+    gridEl.innerHTML = '';
+    items.forEach(p => {
+      const card = document.createElement('div');
+      card.className = 'product-card';
+      card.setAttribute('data-id', p.id);
+      card.innerHTML = `
+        <img src="${p.img}" alt="${p.title}">
+        <div class="product-info">
+          <h3>${p.title}</h3>
+          <p>$${p.price}</p>
+          <button class="like-btn" type="button">❤ Like</button>
+        </div>`;
+      // wire events
+      card.addEventListener('mouseenter', () => addView(p.id));
+      card.addEventListener('click', e => { if (!e.target.closest('.like-btn')) addView(p.id); });
+      const likeEl = $('.like-btn', card);
+      likeEl.addEventListener('click', e => { e.stopPropagation(); toggleLike(p.id); likeEl.textContent = (new Set(LS.get(KEYS.likes, []))).has(p.id) ? '❤ Liked' : '❤ Like'; rerankAndRender(); });
+      likeEl.textContent = (new Set(LS.get(KEYS.likes, []))).has(p.id) ? '❤ Liked' : '❤ Like';
+      gridEl.appendChild(card);
+    });
+  }
+
+  function rerankAndRender() {
+    ensureRecommendationsSection();
+    const ranked = rankProducts();
+    const byIdMap = Object.fromEntries(CATALOG.map(p => [p.id, p]));
+    const ordered = ranked.map(r => byIdMap[r.id]);
+    const grid = byId('recsGrid');
+    if (grid) renderCardsInto(grid, ordered.slice(0, 6));
+  }
+
+  // ===== Toast =====
+  let toastTimer = null;
+  function toast(msg) {
+    let el = byId('np_toast');
+    if (!el) {
+      el = document.createElement('div'); el.id = 'np_toast';
+      Object.assign(el.style, { position:'fixed', bottom:'20px', left:'50%', transform:'translateX(-50%)', background:'#1a1a1a', color:'#fff', padding:'10px 16px', borderRadius:'10px', boxShadow:'0 6px 24px rgba(0,0,0,.35)', zIndex:'2000', fontWeight:'600', transition:'opacity .3s' });
+      document.body.appendChild(el);
+    }
+    el.textContent = msg; el.style.opacity = '1';
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => { el.style.opacity = '0'; }, 1500);
+  }
+
+  // ===== Init =====
+  document.addEventListener('DOMContentLoaded', () => {
+    hydrateTagToggles();
+    wireProductGrid();
+    rerankAndRender();
+  });
+
+  </script>
+  
+
+</body>
+</html>

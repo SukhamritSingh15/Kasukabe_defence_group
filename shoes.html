@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Pique Polo – Product Page</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg1:#01070c; /* bluish gradient start */
+      --bg2:#1b263b; /* bluish gradient mid */
+      --bg3:#2c3e50; /* bluish gradient end */
+      --card:rgba(255,255,255,.06);
+      --text:#e9eef6;
+      --muted:#c7d2e0;
+      --accent:#ffcc00; /* rating color */
+      --pill:#ffd54d; /* add to cart yellow */
+      --pill-hover:#f2c233;
+      --stroke:rgba(255,255,255,.14);
+      --ink:#0b1220;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:Inter,system-ui,Segoe UI,Roboto,Arial,Helvetica,sans-serif;
+      color:var(--text);
+      background:linear-gradient(135deg,var(--bg1),var(--bg2),var(--bg3));
+      -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+    }
+
+    .container{
+      max-width:1200px;
+      margin:40px auto;
+      padding:0 24px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap:48px;
+    }
+
+    /* LEFT: Gallery */
+    .gallery{
+      background:var(--card);
+      border:1px solid var(--stroke);
+      border-radius:16px;
+      overflow:hidden;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      min-height:620px;
+      position:relative;
+    }
+    .gallery img{width:100%;height:100%;object-fit:cover}
+
+    .dots{
+      position:absolute;bottom:16px;left:50%;transform:translateX(-50%);
+      display:flex;gap:8px;
+    }
+    .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.35)}
+    .dot.active{background:#fff}
+
+    /* RIGHT: Details */
+    .breadcrumbs{color:var(--muted);font-size:12px;margin-bottom:8px;}
+    .title-price{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
+    h1{margin:8px 0 4px;font-size:32px;letter-spacing:.2px}
+    .price{font-weight:700;font-size:28px}
+
+    .rating{display:flex;align-items:center;gap:10px;margin:8px 0 18px}
+    .stars{color:var(--accent);font-size:18px;letter-spacing:1px}
+    .reviews{color:var(--muted);font-size:14px}
+
+    .swatches{display:flex;gap:12px;margin:12px 0 22px;align-items:center}
+    .swatch{width:26px;height:26px;border-radius:50%;border:2px solid #fff22;
+      outline:2px solid transparent;cursor:pointer;display:inline-block}
+    .swatch.darknavy{background:#0e1a25}
+    .swatch.silver{background:#dddddf}
+    .swatch.navy{background:#243447}
+    .swatch.olive{background:#556b2f}
+    .swatch.active{outline-color:#fff}
+
+    .controls{display:flex;gap:14px;align-items:center;margin:10px 0 18px}
+    .select{
+      position:relative;flex:1;min-width:200px;
+    }
+    .label-row{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;margin-bottom:6px}
+    .help{border-bottom:1px dashed var(--muted);cursor:pointer}
+    select{
+      width:100%;appearance:none;background:var(--card);color:var(--text);
+      padding:14px 44px 14px 14px;border:1px solid var(--stroke);border-radius:10px;font-size:14px;
+    }
+    .select:after{content:"\25BE";position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--muted)}
+
+    .cta{margin-top:12px}
+    .btn{
+      width:100%;
+      padding:16px 18px;border:none;border-radius:10px;font-weight:700;font-size:14px;
+      background:var(--pill);color:#1a1a1a;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.25);
+      transition:transform .06s ease, background .2s ease;
+    }
+    .btn:active{transform:translateY(1px)}
+    .btn:hover{background:var(--pill-hover)}
+
+    .note{color:var(--muted);font-size:13px;margin-top:12px}
+
+    .tabs{margin-top:24px;border-top:1px solid var(--stroke)}
+    .tab-list{display:flex;gap:20px;padding-top:12px}
+    .tab-btn{background:transparent;border:none;color:var(--muted);font-weight:600;padding:8px 2px;cursor:pointer;border-bottom:2px solid transparent}
+    .tab-btn.active{color:#fff;border-color:#fff}
+    .tab-panel{margin-top:12px;color:#dfe6f3;font-size:15px;line-height:1.7}
+
+    .also{margin-top:28px;background:var(--card);border:1px solid var(--stroke);border-radius:12px;padding:16px}
+    .also h4{margin:0 0 12px;font-size:15px;color:var(--muted);font-weight:600}
+    .also .mini{display:flex;gap:12px;align-items:center}
+    .also .mini img{width:60px;height:60px;border-radius:8px;object-fit:cover;border:1px solid var(--stroke)}
+
+    /* Tooltip */
+    .tooltip{position:relative;display:inline-block}
+    .tooltip .tiptext{
+      visibility:hidden;opacity:0;transition:opacity .2s ease;position:absolute;bottom:130%;left:50%;transform:translateX(-50%);
+      background:#0b1220;color:#fff;padding:8px 10px;border-radius:8px;border:1px solid var(--stroke);white-space:nowrap;font-size:12px;
+    }
+    .tooltip:hover .tiptext{visibility:visible;opacity:1}
+
+    /* Responsive */
+    @media (max-width: 980px){
+      .grid{grid-template-columns:1fr;gap:28px}
+      .gallery{min-height:420px}
+      .title-price{align-items:flex-start}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="grid">
+      <!-- Left: Product image -->
+      <div class="gallery">
+        <!-- Replace the src with your actual product image URL -->
+        <img src="airforce.webp" alt="The Pique Polo"/>
+        <div class="dots" aria-hidden="true">
+          <span class="dot active"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </div>
+      </div>
+
+      <!-- Right: Details -->
+      <section>
+        <div class="breadcrumbs">Nike Air Force</div>
+        <div class="title-price">
+          <div>
+            <h1>Nike Sneakers</h1>
+            <div class="rating">
+              <div class="stars" aria-label="4 out of 5 stars">★★★★★</div>
+              <div class="reviews">| 176 Reviews</div>
+            </div>
+          </div>
+          <div class="price">$399</div>
+        </div>
+
+        <div class="swatches" role="list" aria-label="Colors">
+          <span style="margin-right:8px;color:var(--muted);font-size:14px">Dark Navy</span>
+          <button class="swatch darknavy active" aria-label="Dark Navy"></button>
+          <button class="swatch silver" aria-label="Silver"></button>
+          <button class="swatch navy" aria-label="Navy"></button>
+          <button class="swatch olive" aria-label="Olive"></button>
+        </div>
+
+        <div class="controls">
+          <div class="select">
+            <div class="label-row">
+              <span>Size</span>
+              <span class="tooltip"><span class="help">What's my size?</span><span class="tiptext">Use our size guide to find your perfect fit.</span></span>
+            </div>
+            <select>
+              <option>M</option>
+              <option>S</option>
+              <option>L</option>
+              <option>XL</option>
+            </select>
+          </div>
+          <div class="select">
+            <div class="label-row"><span>Fit</span></div>
+            <select>
+              <option>Long</option>
+              <option>Regular</option>
+              <option>Slim</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="cta"><button class="btn">ADD TO CART</button></div>
+        <div class="note">Delivery in 4–6 days | Free from 100 Dollars | Free returns & exchanges</div>
+
+        <div class="tabs">
+          <div class="tab-list">
+            <button class="tab-btn active" data-tab="overview">Overview</button>
+            <button class="tab-btn" data-tab="details">Details</button>
+            <button class="tab-btn" data-tab="fit">Fit</button>
+            <button class="tab-btn" data-tab="care">Care</button>
+          </div>
+          <div id="panel-overview" class="tab-panel">
+Overview: Iconic lifestyle sneaker, originally released in 1968.
+
+Material: Soft suede upper with rubber sole.
+
+Features: Comfortable, durable, versatile for casual wear.
+
+Style: Retro design, often used in streetwear and hip-hop culture.
+          </div>
+          <div id="panel-details" class="tab-panel" hidden>
+          Comfortable<br>
+          Stylish
+          </div>
+          <div id="panel-fit" class="tab-panel" hidden>
+           Size chart given 
+          <div id="panel-care" class="tab-panel" hidden>
+            Made in london
+          </div>
+        </div>
+
+        
+      </section>
+    </div>
+  </div>
+
+  <script>
+    // Tabs logic
+    const btns = document.querySelectorAll('.tab-btn');
+    const panels = {
+      overview: document.getElementById('panel-overview'),
+      details: document.getElementById('panel-details'),
+      fit: document.getElementById('panel-fit'),
+      care: document.getElementById('panel-care')
+    };
+
+    btns.forEach(b=>{
+      b.addEventListener('click', ()=>{
+        btns.forEach(x=>x.classList.remove('active'));
+        Object.values(panels).forEach(p=>p.hidden = true);
+        b.classList.add('active');
+        const id = b.dataset.tab;
+        panels[id].hidden = false;
+      })
+    })
+
+    // Swatch active state
+    document.querySelectorAll('.swatch').forEach(s=>{
+      s.addEventListener('click', ()=>{
+        document.querySelectorAll('.swatch').forEach(x=>x.classList.remove('active'));
+        s.classList.add('active');
+      })
+    })
+  </script>
+</body>
+</html>
